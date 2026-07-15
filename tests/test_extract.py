@@ -1,4 +1,10 @@
-from app.core.extract import extract, find_amount, find_category, normalize_amount
+from app.core.extract import (
+    extract,
+    find_amount,
+    find_category,
+    find_merchant,
+    normalize_amount,
+)
 
 
 def test_normalize_amount_indonesian_thousands():
@@ -29,6 +35,28 @@ def test_no_amount_found_returns_none():
     assert find_amount("NO NUMBERS HERE") is None
 
 
+def test_finds_amount_with_comma_thousands_separator():
+    # Not every receipt follows the dot-as-thousands convention in practice.
+    text = "TOKO\nTotal: 62,100"
+    assert find_amount(text) == 62100.0
+
+
+def test_finds_amount_when_keyword_and_value_are_on_separate_ocr_lines():
+    # Reproduces a real Indomaret receipt: EasyOCR frequently detects a
+    # label and its amount as separate line boxes, and this one used a
+    # comma thousands separator with no "Rp" prefix.
+    text = "\n".join(
+        [
+            "BUKiT RIVARIA SEKTOR 2",
+            "TOTAL BELANJH",  # OCR misread of "TOTAL BELANJA"
+            "62,100",
+            "NoN   TunAi",
+            "62,100",
+        ]
+    )
+    assert find_amount(text) == 62100.0
+
+
 def test_category_matches_known_merchant():
     text = "ALFAMART SUKAJADI\nTotal Rp 25.000"
     assert find_category(text) == "Groceries"
@@ -37,6 +65,25 @@ def test_category_matches_known_merchant():
 def test_category_defaults_to_uncategorised():
     text = "SOME UNKNOWN SHOP\nTotal Rp 25.000"
     assert find_category(text) == "Uncategorised"
+
+
+def test_merchant_uses_first_line_when_it_already_names_the_brand():
+    text = "KOPI KENANGAN\nTotal Rp 25.000"
+    assert find_merchant(text) == "KOPI KENANGAN"
+
+
+def test_merchant_falls_back_to_known_keyword_when_header_is_garbled():
+    # Reproduces the real Indomaret receipt: the store name/logo OCR'd as
+    # garbage, but "indomaret" is still readable from a footer contact line.
+    text = "\n".join(
+        [
+            "JL",
+            "E_WITRI",
+            "SEkTCR2 BlOK",
+            "KONTAK@INDOMARET.CO.ID",
+        ]
+    )
+    assert find_merchant(text) == "Indomaret"
 
 
 def test_extract_returns_full_result():

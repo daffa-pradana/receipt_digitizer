@@ -4,5 +4,6 @@ __pycache__/
 .venv/
 venv/
 tests/sample_receipts/*.jpg
+tests/sample_receipts/*.jpeg
 tests/sample_receipts/*.png
 .DS_Store

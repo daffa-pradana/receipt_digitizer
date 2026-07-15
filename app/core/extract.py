@@ -14,7 +14,7 @@ TOTAL_KEYWORDS = (
 EXCLUDE_PATTERN = re.compile(r"kembali|change", re.IGNORECASE)
 
 AMOUNT_PATTERN = re.compile(
-    r"rp\.?\s*(\d[\d.,]*)|(\d{1,3}(?:\.\d{3})+)",
+    r"rp\.?\s*(\d{1,3}(?:[.,]\d{3})+)|(\d{1,3}(?:[.,]\d{3})+)",
     re.IGNORECASE,
 )
 
@@ -37,11 +37,20 @@ def find_amount(text: str) -> float | None:
     lines = [line for line in text.splitlines() if not EXCLUDE_PATTERN.search(line)]
 
     for keyword in TOTAL_KEYWORDS:
-        for line in lines:
-            if re.search(keyword, line, re.IGNORECASE):
-                match = AMOUNT_PATTERN.search(line)
-                if match:
-                    return normalize_amount(match.group(1) or match.group(2))
+        for index, line in enumerate(lines):
+            if not re.search(keyword, line, re.IGNORECASE):
+                continue
+            match = AMOUNT_PATTERN.search(line)
+            if match:
+                return normalize_amount(match.group(1) or match.group(2))
+            # OCR frequently detects a label and its amount as separate line
+            # boxes (e.g. "TOTAL BELANJA" / "62,100" on their own lines), so
+            # fall back to the very next line when the keyword line itself
+            # has no digits.
+            if index + 1 < len(lines):
+                next_match = AMOUNT_PATTERN.search(lines[index + 1])
+                if next_match:
+                    return normalize_amount(next_match.group(1) or next_match.group(2))
 
     return _largest_amount(lines)
 
@@ -55,20 +64,36 @@ def _largest_amount(lines: list[str]) -> float | None:
     return max(amounts) if amounts else None
 
 
-def find_category(text: str) -> str:
-    lowered = text.lower()
+def _match_known_merchant(lowered_text: str) -> tuple[str, str] | None:
     for category, keywords in CATEGORIES.items():
-        if any(keyword in lowered for keyword in keywords):
-            return category
-    return DEFAULT_CATEGORY
+        for keyword in keywords:
+            if keyword in lowered_text:
+                return category, keyword
+    return None
+
+
+def find_category(text: str) -> str:
+    match = _match_known_merchant(text.lower())
+    return match[0] if match else DEFAULT_CATEGORY
 
 
 def find_merchant(text: str) -> str:
+    first_line = ""
     for line in text.splitlines():
         stripped = line.strip()
         if stripped:
-            return stripped
-    return ""
+            first_line = stripped
+            break
+
+    # Receipt headers (store name/logo) are often the worst-OCR'd part of the
+    # image. If the first line doesn't already contain a known merchant
+    # keyword, prefer that keyword (found anywhere, e.g. a footer contact
+    # line) over the garbled first line.
+    match = _match_known_merchant(text.lower())
+    if match and match[1] not in first_line.lower():
+        return match[1].title()
+
+    return first_line
 
 
 def extract(full_text: str, confidence: float = 0.0) -> dict:
