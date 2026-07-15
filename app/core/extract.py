@@ -21,7 +21,7 @@ AMOUNT_PATTERN = re.compile(
 CATEGORIES = {
     "Groceries": ("alfamart", "indomaret", "superindo", "hypermart", "giant"),
     "F&B": ("kopi", "coffee", "resto", "cafe", "kfc", "mcd", "warung"),
-    "Transport": ("grab", "gojek", "pertamina", "shell", "spbu", "mrt"),
+    "Transport": ("grab", "gojek", "pertamina", "shell", "spbu", "mrt", "toll", "e-toll"),
     "Pharmacy": ("apotek", "kimia farma", "guardian", "watsons"),
 }
 

@@ -86,6 +86,20 @@ def test_merchant_falls_back_to_known_keyword_when_header_is_garbled():
     assert find_merchant(text) == "Indomaret"
 
 
+def test_category_and_merchant_for_toll_receipt():
+    # Reproduces a real, heavily-garbled Cinere-Jagorawi toll receipt: almost
+    # nothing OCR'd cleanly, but "TOLL" and "e-Toll" survived intact.
+    text = "\n".join(
+        [
+            "WT: 1 {ANSLINCKAR Kita",
+            "JAGOQAMI TOLL",
+            "GUL-| e-Toll Handiri",
+        ]
+    )
+    assert find_category(text) == "Transport"
+    assert find_merchant(text) == "Toll"
+
+
 def test_extract_returns_full_result():
     text = "KOPI KENANGAN\nTotal Rp 25.000"
     result = extract(text, confidence=0.87)
