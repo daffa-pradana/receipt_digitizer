@@ -6,15 +6,19 @@ Status legend: `[x]` done · `(in progress)` next to a phase title means activel
 
 ## Current status
 
-| Phase | Status |
-|---|---|
-| 0: Scaffold, git identity, PR workflow | ✅ Done |
-| 1: Core pipeline (preprocess/OCR/extract) | ⬜ Not started |
-| 2: Database layer | ⬜ Not started |
-| 3: Streamlit UI | ⬜ Not started |
-| 4: Dockerize and full run | ⬜ Not started |
-| 5: Demo prep | ⬜ Not started |
-| 6: Deployment (post-demo) | ⬜ Not started |
+Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to build or debug. The brother owns demo-day legwork, PR review, and small self-contained content contributions (e.g. the category dictionary) that don't need git/terminal at all — see his phases for how.
+
+| Phase | Owner | Status |
+|---|---|---|
+| 0: Scaffold, git identity, PR workflow | Daffa | ✅ Done |
+| 1: Core pipeline (preprocess/OCR/extract) | Daffa | 🔄 In progress |
+| 2: Database layer | Daffa | ⬜ Not started |
+| 3: Streamlit UI | Daffa | ⬜ Not started |
+| 4: Dockerize and full run | Daffa | ⬜ Not started |
+| 5: Demo prep | Brother | ⬜ Not started |
+| 6: Deployment (post-demo) | Daffa | ⬜ Not started |
+
+**Ongoing (not phase-bound):** Brother reviews/approves every PR; he can also update the `CATEGORIES` dict in `app/core/extract.py` directly via GitHub's web "Edit this file" button (opens a PR for him automatically, no git/terminal needed) whenever he thinks of an Indonesian merchant keyword that's missing.
 
 ---
 
@@ -28,16 +32,18 @@ Status legend: `[x]` done · `(in progress)` next to a phase title means activel
 - [x] First PR (#1, `docs: add contributing section`) opened, approved, merged
 - [x] `README.md` documents the branch/PR/approve/merge workflow for contributors
 
-## Phase 1: Core pipeline, testable offline (2 to 3 hours)
+## Phase 1: Core pipeline, testable offline (2 to 3 hours) — 🔄 In progress
 
 Build `core/` so it runs on a sample image with no UI and no database.
 
-- [ ] `preprocess.py`: `clean(image_bytes) -> numpy array` — decode, resize, grayscale, adaptive threshold
-- [ ] `ocr.py`: `read(image) -> (full_text, lines_with_conf)` wrapping EasyOCR. Load the `Reader` once at module level or via a getter, not per call
-- [ ] `extract.py`: `extract(full_text) -> {merchant, category, amount, confidence}` using the regex + keyword dictionary from `ARCHITECTURE.md`
-- [ ] `tests/test_extract.py` with fixed OCR-text strings (no image needed): verify `Rp 25.000`, `Total Belanja 150.000`, and that `Kembali` / change is never picked up as the total
+- [x] `preprocess.py`: `clean(image_bytes) -> numpy array` — decode, resize, grayscale, adaptive threshold
+- [x] `ocr.py`: `read(image) -> (full_text, lines_with_conf)` wrapping EasyOCR. Load the `Reader` once at module level via a getter, not per call
+- [x] `extract.py`: `extract(full_text) -> {merchant, category, amount, confidence}` using keyword-priority regex + category dictionary from `ARCHITECTURE.md`
+- [x] `tests/test_extract.py` with fixed OCR-text strings (no image needed): verifies `Rp 25.000`, `Total Belanja 150.000`, that `Kembali` / change is never picked up as the total, category matching, and the largest-amount fallback when no keyword line is found
 
-**Acceptance:** `python -m pytest` passes on the extraction tests, and a quick script prints a sensible amount and category for one real receipt photo.
+**Acceptance:**
+- [x] `python -m pytest` passes on the extraction tests (verified locally, no OCR/Docker needed for this part)
+- [ ] A quick script prints a sensible amount and category for one real receipt photo — **still pending**, needs EasyOCR/Docker (or a local install) plus an actual receipt photo to run against; `preprocess.py`/`ocr.py` are written but unverified against real images until then
 
 ## Phase 2: Database layer (1 hour)
 
