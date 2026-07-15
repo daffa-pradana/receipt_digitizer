@@ -6,7 +6,7 @@ Status legend: `[x]` done · `(in progress)` next to a phase title means activel
 
 ## Current status
 
-Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to build or debug. The brother owns demo-day legwork, PR review, and small self-contained content contributions (e.g. the category dictionary) that don't need git/terminal at all — see his phases for how.
+Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to build or debug. siapahayooo1709 owns demo-day legwork, PR review, and small self-contained content contributions (e.g. the category dictionary) that don't need git/terminal at all — see his phases for how.
 
 | Phase | Owner | Status |
 |---|---|---|
@@ -15,10 +15,10 @@ Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to b
 | 2: Database layer | Daffa | ⬜ Not started |
 | 3: Streamlit UI | Daffa | ⬜ Not started |
 | 4: Dockerize and full run | Daffa | ⬜ Not started |
-| 5: Demo prep | Brother | ⬜ Not started |
+| 5: Demo prep | siapahayooo1709 | ⬜ Not started |
 | 6: Deployment (post-demo) | Daffa | ⬜ Not started |
 
-**Ongoing (not phase-bound):** Brother reviews/approves every PR; he can also update the `CATEGORIES` dict in `app/core/extract.py` directly via GitHub's web "Edit this file" button (opens a PR for him automatically, no git/terminal needed) whenever he thinks of an Indonesian merchant keyword that's missing.
+**Ongoing (not phase-bound):** siapahayooo1709 reviews/approves every PR; he can also update the `CATEGORIES` dict in `app/core/extract.py` directly via GitHub's web "Edit this file" button (opens a PR for him automatically, no git/terminal needed) whenever he thinks of an Indonesian merchant keyword that's missing.
 
 ---
 
@@ -28,7 +28,7 @@ Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to b
 - [x] Personal git identity set per-repo (`daffaarravi@gmail.com`), not the work identity
 - [x] GitHub repo created (`daffa-pradana/receipt_digitizer`), scaffold pushed to `main`
 - [x] Branch protection on `main`: PR + 1 approval required, enforced for admins too, conversations must resolve, no force-push/delete
-- [x] Brother added as collaborator (write access) and accepted the invite
+- [x] siapahayooo1709 added as collaborator (write access) and accepted the invite
 - [x] First PR (#1, `docs: add contributing section`) opened, approved, merged
 - [x] `README.md` documents the branch/PR/approve/merge workflow for contributors
 

@@ -1,7 +1,7 @@
 # PRD: AI Receipt Digitizer (Buku Kas Digital)
 
 **Status:** Draft v1 for MVP / thesis demo
-**Author:** (brother, thesis owner)
+**Author:** (siapahayooo1709, thesis owner)
 **Reviewer / co-dev:** Daffa
 **Target demo:** Wednesday (lecturer)
 **Repo owner identity:** daffaarravi@gmail.com
@@ -31,7 +31,7 @@ Manual bookkeeping from paper receipts is slow and error prone. People take phot
 
 ## 4. Target user
 
-The user's own brother / a student or individual who wants a quick personal expense tracker. Non technical. Uses a phone camera and a laptop browser.
+siapahayooo1709 — a student or individual who wants a quick personal expense tracker. Non technical. Uses a phone camera and a laptop browser.
 
 ## 5. Functional requirements
 
@@ -71,7 +71,7 @@ The user's own brother / a student or individual who wants a quick personal expe
 - **Local first:** the whole app runs offline on a laptop for the demo. OCR models are baked into the Docker image so no internet is needed on demo day.
 - **Free:** every runtime dependency is open source and free. The only optional cost is a small VPS after the demo.
 - **Reproducible:** `docker compose up` starts the app and database with no manual setup beyond copying `.env`.
-- **Portable:** the brother can clone the repo and run the exact same stack.
+- **Portable:** siapahayooo1709 can clone the repo and run the exact same stack.
 - **Acceptable latency:** OCR on CPU may take a few seconds per image. Acceptable for 5 images in a demo.
 
 ## 7. Success metrics (demo)
@@ -79,7 +79,7 @@ The user's own brother / a student or individual who wants a quick personal expe
 - Upload 5 real receipts, get a total extracted for at least 4 of them without manual retype.
 - Correct any misread cell in the table and save successfully.
 - Pie chart reflects the saved totals correctly.
-- Fresh clone on the brother's machine runs with one command.
+- Fresh clone on siapahayooo1709's machine runs with one command.
 
 ## 8. Honest AI framing (important for the defense)
 
