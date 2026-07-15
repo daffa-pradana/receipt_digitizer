@@ -11,8 +11,8 @@ Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to b
 | Phase | Owner | Status |
 |---|---|---|
 | 0: Scaffold, git identity, PR workflow | Daffa | ✅ Done |
-| 1: Core pipeline (preprocess/OCR/extract) | Daffa | 🔄 In progress |
-| 2: Database layer | Daffa | ⬜ Not started |
+| 1: Core pipeline (preprocess/OCR/extract) | Daffa | ✅ Done |
+| 2: Database layer | Daffa | 🔄 In progress |
 | 3: Streamlit UI | Daffa | ⬜ Not started |
 | 4: Dockerize and full run | Daffa | ⬜ Not started |
 | 5: Demo prep | siapahayooo1709 | ⬜ Not started |
@@ -32,7 +32,7 @@ Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to b
 - [x] First PR (#1, `docs: add contributing section`) opened, approved, merged
 - [x] `README.md` documents the branch/PR/approve/merge workflow for contributors
 
-## Phase 1: Core pipeline, testable offline (2 to 3 hours) — 🔄 In progress
+## Phase 1: Core pipeline, testable offline (2 to 3 hours) — ✅ Done
 
 Build `core/` so it runs on a sample image with no UI and no database.
 
@@ -43,15 +43,15 @@ Build `core/` so it runs on a sample image with no UI and no database.
 
 **Acceptance:**
 - [x] `python -m pytest` passes on the extraction tests (verified locally, no OCR/Docker needed for this part)
-- [ ] A quick script prints a sensible amount and category for one real receipt photo — **still pending**, needs EasyOCR/Docker (or a local install) plus an actual receipt photo to run against; `preprocess.py`/`ocr.py` are written but unverified against real images until then
+- [x] A quick script prints a sensible amount and category for one real receipt photo — validated via `docker compose` against two real photos: an Indomaret receipt (merchant, category, and amount all extracted correctly after two bug fixes: keyword+amount split across separate OCR lines, and comma as a thousands separator) and a Cinere-Jagorawi toll receipt (category/merchant correct via the `toll`/`e-toll` keywords, but amount stayed unrecoverable — OCR quality on that one was too poor, an expected case for the human review table to catch, consistent with the PRD's 4-of-5 bar)
 
-## Phase 2: Database layer (1 hour)
+## Phase 2: Database layer (1 hour) — 🔄 In progress
 
-- [ ] `db.py`: `init_schema()`, `insert_transactions(rows)`, `spending_by_category() -> list of (category, total)`
-- [ ] `transactions` table created from `ARCHITECTURE.md`'s schema on startup
-- [ ] Connection settings read from `config.py`
+- [x] `db.py`: `init_schema()`, `insert_transactions(rows)`, `spending_by_category() -> list of (category, total)`
+- [x] `transactions` table created from `ARCHITECTURE.md`'s schema on startup
+- [x] Connection settings read from `config.py`
 
-**Acceptance:** running against the Dockerised Postgres, an insert then a `spending_by_category()` call returns the expected totals.
+**Acceptance:** running against the Dockerised Postgres, an insert then a `spending_by_category()` call returns the expected totals — [x] verified: ran `docker compose up -d db`, inserted two rows across different categories twice, and `spending_by_category()` correctly returned accumulated per-category totals both times (confirming `init_schema()` is idempotent). Test rows truncated afterward.
 
 ## Phase 3: Streamlit UI (2 to 3 hours)
 
