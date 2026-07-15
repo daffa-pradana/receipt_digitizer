@@ -18,8 +18,8 @@ Turn up to 5 receipt photos into a categorised expense record with a live spendi
 ## Quickstart
 
 ```bash
-git clone git@github.com:daffa-pradana/receipt-digitizer.git
-cd receipt-digitizer
+git clone git@github.com:daffa-pradana/receipt_digitizer.git
+cd receipt_digitizer
 cp .env.example .env      # adjust the password if you like
 docker compose up --build
 ```
@@ -33,14 +33,27 @@ docker compose --profile admin up
 # pgAdmin at http://localhost:5050
 ```
 
-## Contributor git identity
+## Contributing
 
-This is a personal project. Set your identity per repo so commits use the personal address:
+This is a personal project. Set your identity per repo so commits use your personal address, not a work one:
 
 ```bash
 git config user.name "Your Name"
 git config user.email "your-personal@email.com"
 ```
+
+`main` is protected: no direct pushes, including from admins. To make a change:
+
+```bash
+git checkout -b your-feature-name main
+# make your changes, commit
+git push -u origin your-feature-name
+gh pr create --base main   # or open the PR from the GitHub UI
+```
+
+- At least one approval (from either reviewer) is required before a PR can merge.
+- Any open review conversations must be resolved before merging.
+- Force-pushes and deletion of `main` are blocked.
 
 ## Project structure
 
