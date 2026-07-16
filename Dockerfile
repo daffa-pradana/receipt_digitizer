@@ -5,7 +5,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-ENV PYTHONPATH=/app
 
 # CPU-only PyTorch first to avoid pulling CUDA wheels
 RUN pip install --no-cache-dir torch torchvision \
@@ -16,6 +15,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Bake OCR models into the image so the demo needs no internet
 RUN python -c "import easyocr; easyocr.Reader(['en'], gpu=False)"
+
+# Late (not right after WORKDIR): keeps earlier layers cache-hit on rebuild
+ENV PYTHONPATH=/app
 
 COPY app/ ./app/
 
