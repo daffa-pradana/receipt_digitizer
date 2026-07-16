@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+ENV PYTHONPATH=/app
 
 # CPU-only PyTorch first to avoid pulling CUDA wheels
 RUN pip install --no-cache-dir torch torchvision \
