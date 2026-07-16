@@ -6,6 +6,7 @@ from app.core import db, ocr, preprocess
 from app.core.extract import CATEGORIES, DEFAULT_CATEGORY, extract
 
 MAX_FILES = 5
+LOW_CONFIDENCE_THRESHOLD = 0.4
 
 st.set_page_config(page_title="Receipt Digitizer", page_icon="🧾")
 
@@ -25,15 +26,18 @@ def process_files(files) -> pd.DataFrame:
 
     rows = []
     for uploaded_file in files:
-        cleaned = preprocess.clean(uploaded_file.getvalue())
-        full_text, lines_with_conf = ocr.read(cleaned)
+        image_bytes = uploaded_file.getvalue()
+        variants = [preprocess.grayscale(image_bytes), preprocess.clean(image_bytes)]
+        full_text, lines_with_conf = ocr.read_best(variants)
 
         confidences = [confidence for _text, confidence in lines_with_conf]
         avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
 
         result = extract(full_text, confidence=avg_confidence)
+        needs_review = result["amount"] is None or avg_confidence < LOW_CONFIDENCE_THRESHOLD
         rows.append(
             {
+                "flag": "⚠️" if needs_review else "",
                 "source_file": uploaded_file.name,
                 "merchant": result["merchant"],
                 "category": result["category"],
@@ -89,12 +93,26 @@ def main() -> None:
                 st.session_state["extracted_df"] = process_files(files)
             st.session_state["uploaded_names"] = uploaded_names
 
+        with st.expander("View uploaded receipt photos"):
+            photo_columns = st.columns(len(files))
+            for column, uploaded_file in zip(photo_columns, files):
+                with column:
+                    st.image(uploaded_file, caption=uploaded_file.name, use_container_width=True)
+
+        flagged_count = (st.session_state["extracted_df"]["flag"] == "⚠️").sum()
+        if flagged_count:
+            st.warning(
+                f"{flagged_count} row(s) need review: missing amount or low OCR "
+                "confidence. Double-check them against the photos above before saving."
+            )
+
         st.subheader("Review and correct")
         category_options = [*CATEGORIES.keys(), DEFAULT_CATEGORY]
         edited_df = st.data_editor(
             st.session_state["extracted_df"],
-            column_order=["source_file", "merchant", "category", "amount", "confidence"],
+            column_order=["flag", "source_file", "merchant", "category", "amount", "confidence"],
             column_config={
+                "flag": st.column_config.TextColumn("", disabled=True, width="small"),
                 "source_file": st.column_config.TextColumn("File", disabled=True),
                 "merchant": st.column_config.TextColumn("Merchant"),
                 "category": st.column_config.SelectboxColumn(

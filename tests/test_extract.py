@@ -100,6 +100,37 @@ def test_category_and_merchant_for_toll_receipt():
     assert find_merchant(text) == "Toll"
 
 
+def test_category_and_merchant_for_cinema_receipt():
+    # Reproduces a real m-tix (cinema) e-ticket receipt: the app's own name
+    # OCR'd as garbage ("Bix"), but "Cinema XXI" survived as "GoncmaXXI".
+    text = "\n".join(
+        [
+            "Bix",
+            "Detail pesenanmudimtix)",
+            "GoncmaXXI",
+            "Total payment)",
+            "Rp236.000,00",
+        ]
+    )
+    assert find_category(text) == "Entertainment"
+    assert find_merchant(text) == "Xxi"
+
+
+def test_category_and_merchant_for_traveloka_receipt():
+    # Reproduces a real Traveloka flight e-receipt: badly garbled overall,
+    # but "traveloka" survived clean enough to substring-match.
+    text = "\n".join(
+        [
+            "6.25 @@ #",
+            "(traveloka",
+            "TOTAL",
+            "1.n30",
+        ]
+    )
+    assert find_category(text) == "Transport"
+    assert find_merchant(text) == "Traveloka"
+
+
 def test_extract_returns_full_result():
     text = "KOPI KENANGAN\nTotal Rp 25.000"
     result = extract(text, confidence=0.87)

@@ -19,10 +19,21 @@ AMOUNT_PATTERN = re.compile(
 )
 
 CATEGORIES = {
-    "Groceries": ("alfamart", "indomaret", "superindo", "hypermart", "giant"),
-    "F&B": ("kopi", "coffee", "resto", "cafe", "kfc", "mcd", "warung"),
-    "Transport": ("grab", "gojek", "pertamina", "shell", "spbu", "mrt", "toll", "e-toll"),
-    "Pharmacy": ("apotek", "kimia farma", "guardian", "watsons"),
+    "Groceries": (
+        "alfamart", "indomaret", "superindo", "hypermart", "giant",
+        "naga swalayan", "tip top", "lotte",
+    ),
+    "F&B": (
+        "kopi", "coffee", "resto", "cafe", "kfc", "mcd", "warung",
+        "janji jiwa", "hokben", "richeese",
+    ),
+    "Transport": (
+        "grab", "gojek", "pertamina", "shell", "spbu", "mrt", "toll", "e-toll",
+        "traveloka", "tiket.com", "kereta api", "citilink", "garuda",
+        "lion air", "batik air",
+    ),
+    "Pharmacy": ("apotek", "kimia farma", "guardian", "watsons", "century", "k24"),
+    "Entertainment": ("xxi", "cgv", "cinepolis", "bioskop", "m-tix"),
 }
 
 DEFAULT_CATEGORY = "Uncategorised"

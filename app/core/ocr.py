@@ -16,3 +16,21 @@ def read(image: np.ndarray) -> tuple[str, list[tuple[str, float]]]:
     lines_with_conf = [(text, float(conf)) for _bbox, text, conf in results]
     full_text = "\n".join(text for text, _conf in lines_with_conf)
     return full_text, lines_with_conf
+
+
+def read_best(images: list[np.ndarray]) -> tuple[str, list[tuple[str, float]]]:
+    """Run read() on each preprocessing variant, keep the highest mean-confidence result.
+
+    Binarization helps faded receipts but can hurt clean ones by discarding
+    information a deep-learning OCR model could otherwise use - so instead of
+    committing to one preprocessing choice, try a few and pick the winner.
+    """
+    candidates = [read(image) for image in images]
+    return max(candidates, key=_mean_confidence)
+
+
+def _mean_confidence(result: tuple[str, list[tuple[str, float]]]) -> float:
+    _full_text, lines_with_conf = result
+    if not lines_with_conf:
+        return 0.0
+    return sum(confidence for _text, confidence in lines_with_conf) / len(lines_with_conf)

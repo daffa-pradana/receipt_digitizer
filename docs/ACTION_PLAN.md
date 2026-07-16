@@ -13,7 +13,8 @@ Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to b
 | 0: Scaffold, git identity, PR workflow | Daffa | ✅ Done |
 | 1: Core pipeline (preprocess/OCR/extract) | Daffa | ✅ Done |
 | 2: Database layer | Daffa | ✅ Done |
-| 3: Streamlit UI | Daffa | 🔄 In progress |
+| 3: Streamlit UI | Daffa | ✅ Done |
+| Pre-demo accuracy hardening | Daffa | ✅ Done |
 | 4: Dockerize and full run | Daffa | ⬜ Not started |
 | 5: Demo prep | siapahayooo1709 | ⬜ Not started |
 | 6: Deployment (post-demo) | Daffa | ⬜ Not started |
@@ -53,7 +54,7 @@ Build `core/` so it runs on a sample image with no UI and no database.
 
 **Acceptance:** running against the Dockerised Postgres, an insert then a `spending_by_category()` call returns the expected totals — [x] verified: ran `docker compose up -d db`, inserted two rows across different categories twice, and `spending_by_category()` correctly returned accumulated per-category totals both times (confirming `init_schema()` is idempotent). Test rows truncated afterward.
 
-## Phase 3: Streamlit UI (2 to 3 hours) — 🔄 In progress
+## Phase 3: Streamlit UI (2 to 3 hours) — ✅ Done
 
 `app/main.py` wires it together:
 
@@ -67,7 +68,31 @@ Build `core/` so it runs on a sample image with no UI and no database.
 
 **Acceptance:** upload → edit → save → chart works entirely in the browser.
 - [x] Verified via `docker compose up`: server starts cleanly with no tracebacks in `docker compose logs app`, and `curl http://localhost:8501/` returns HTTP 200
-- [ ] Full interactive click-through (upload a real photo → edit table → Save → chart updates → 6-file rejection) — **still pending manual confirmation**; headless browser automation wasn't available in the dev sandbox (missing system libraries, would need a `sudo` install), so this needs an actual person clicking through the running app
+- [x] Full interactive click-through confirmed manually: uploaded 5 receipts, reviewed/edited the table, saved (data persisted across reloads, confirming it hit Postgres), pie chart updated
+
+**Two real bugs found and fixed during that manual click-through** (not caught by the automated checks above, since those only prove the server *starts*, not that a live browser session can *run the script*):
+- `ModuleNotFoundError: No module named 'app'` in production — the running container was serving a **stale image** built before Phase 2/3 existed (we'd only ever tested new code via one-off bind-mounted `docker compose run` commands, never rebuilt the actual image `docker compose up` uses). Once rebuilt, the same root cause as the Phase 1 `check_pipeline.py` bug showed up for real: `streamlit run app/main.py` puts the script's own directory on `sys.path`, not `/app`, so the top-level `app` package was unreachable. Fixed with `ENV PYTHONPATH=/app` in the `Dockerfile`, placed right before the final `COPY` (not right after `WORKDIR`, which was tried first and invalidated the cache for every layer after it, forcing a full torch/EasyOCR re-download).
+- A stale healthcheck (`pg_isready -U $POSTGRES_USER` with no `-d` flag, from Phase 0) spams `FATAL: database "receipt" does not exist` in the `db` logs every 5 seconds — harmless (Postgres still reports healthy), but worth knowing it's noise, not a real error, if it comes up again.
+
+## Pre-demo accuracy hardening — ✅ Done
+
+Testing all 5 receipts in `tests/sample_receipts/` against `tests/supposed_result.json` (ground truth) surfaced real gaps — some genuine OCR limitations, some just missing keyword coverage. Fixed the fixable ones:
+
+- [x] `CATEGORIES` expanded: new `Entertainment` category (`xxi`, `cgv`, `cinepolis`, `bioskop`, `m-tix`); `Transport` += `traveloka`, `tiket.com`, `kereta api`, `citilink`, `garuda`, `lion air`, `batik air`; plus more Indonesian F&B/Groceries/Pharmacy brands
+- [x] `ocr.read_best()`: runs OCR on both a plain grayscale variant and the adaptive-threshold variant, keeps whichever gives higher mean confidence — binarization can help faded receipts but hurt clean ones, so trying both instead of committing to one beat guessing
+- [x] Review-UX: uploaded photos viewable in an expander next to the table; rows with a missing amount or confidence below 0.4 get a `⚠️` flag column plus a summary warning banner
+
+**Result, re-tested against all 5 real receipts after these fixes:**
+
+| Receipt | Merchant | Category | Amount |
+|---|---|---|---|
+| Indomaret | ✅ exact | ✅ | ✅ exact (62.100) |
+| Kopi Tuku | near-miss (OCR dropped one letter: "TUU" vs "TUKU") | ✅ | ✅ exact (113.000) |
+| Flight/Traveloka | ✅ exact | ✅ | ✅ exact (1.760.788) — was completely wrong before the grayscale variant fixed it |
+| Cinema (m-tix) | reasonable ("Xxi", the chain name) | ✅ | ✅ exact (236.000) |
+| Toll road | generic ("Toll" vs "PT Translingkar") | ✅ | unrecoverable — OCR never captured the true digits anywhere in the text (`Rp. 141H11`), a genuine image-quality ceiling, not a regex bug |
+
+4 of 5 fully correct or near-perfect; the one remaining gap is a documented, inherent OCR limitation the editable review table exists to catch — consistent with the PRD's 4-of-5 success bar.
 
 ## Phase 4: Dockerize and full run (1 hour)
 
