@@ -12,8 +12,8 @@ Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to b
 |---|---|---|
 | 0: Scaffold, git identity, PR workflow | Daffa | ✅ Done |
 | 1: Core pipeline (preprocess/OCR/extract) | Daffa | ✅ Done |
-| 2: Database layer | Daffa | 🔄 In progress |
-| 3: Streamlit UI | Daffa | ⬜ Not started |
+| 2: Database layer | Daffa | ✅ Done |
+| 3: Streamlit UI | Daffa | 🔄 In progress |
 | 4: Dockerize and full run | Daffa | ⬜ Not started |
 | 5: Demo prep | siapahayooo1709 | ⬜ Not started |
 | 6: Deployment (post-demo) | Daffa | ⬜ Not started |
@@ -45,7 +45,7 @@ Build `core/` so it runs on a sample image with no UI and no database.
 - [x] `python -m pytest` passes on the extraction tests (verified locally, no OCR/Docker needed for this part)
 - [x] A quick script prints a sensible amount and category for one real receipt photo — validated via `docker compose` against two real photos: an Indomaret receipt (merchant, category, and amount all extracted correctly after two bug fixes: keyword+amount split across separate OCR lines, and comma as a thousands separator) and a Cinere-Jagorawi toll receipt (category/merchant correct via the `toll`/`e-toll` keywords, but amount stayed unrecoverable — OCR quality on that one was too poor, an expected case for the human review table to catch, consistent with the PRD's 4-of-5 bar)
 
-## Phase 2: Database layer (1 hour) — 🔄 In progress
+## Phase 2: Database layer (1 hour) — ✅ Done
 
 - [x] `db.py`: `init_schema()`, `insert_transactions(rows)`, `spending_by_category() -> list of (category, total)`
 - [x] `transactions` table created from `ARCHITECTURE.md`'s schema on startup
@@ -53,19 +53,21 @@ Build `core/` so it runs on a sample image with no UI and no database.
 
 **Acceptance:** running against the Dockerised Postgres, an insert then a `spending_by_category()` call returns the expected totals — [x] verified: ran `docker compose up -d db`, inserted two rows across different categories twice, and `spending_by_category()` correctly returned accumulated per-category totals both times (confirming `init_schema()` is idempotent). Test rows truncated afterward.
 
-## Phase 3: Streamlit UI (2 to 3 hours)
+## Phase 3: Streamlit UI (2 to 3 hours) — 🔄 In progress
 
 `app/main.py` wires it together:
 
-- [ ] Title and a short intro
-- [ ] `st.file_uploader(accept_multiple_files=True)`; block more than 5 files
-- [ ] On upload, run each file through preprocess → ocr → extract, collect rows into a DataFrame
-- [ ] `st.data_editor(df)` so the user can correct merchant, category, amount
-- [ ] Save button calling `db.insert_transactions(...)`
-- [ ] Query `spending_by_category()` and draw a Plotly pie chart below it
-- [ ] Cache the EasyOCR Reader with `@st.cache_resource`
+- [x] Title and a short intro (with the honest AI framing: OCR is ML, extraction is rule-based)
+- [x] `st.file_uploader(accept_multiple_files=True)`; blocks more than 5 files with an error message
+- [x] On upload, run each file through preprocess → ocr → extract, collect rows into a DataFrame (cached in `st.session_state` so re-running the OCR pipeline isn't triggered on every widget interaction, only on a new set of uploaded files)
+- [x] `st.data_editor(df)` so the user can correct merchant, category (as a dropdown constrained to the known categories), amount (blocks Save if any row's amount is blank); `raw_text` stays in the underlying data for the DB insert but is hidden from the visible columns
+- [x] Save button calling `db.insert_transactions(...)`, then resets the uploader for the next batch
+- [x] Query `spending_by_category()` and draw a Plotly pie chart below it
+- [x] Cache the EasyOCR Reader with `@st.cache_resource` (wraps `ocr.get_reader()`'s own module-level singleton); schema init is also wrapped in `@st.cache_resource` so it only runs once per process, not on every rerun
 
 **Acceptance:** upload → edit → save → chart works entirely in the browser.
+- [x] Verified via `docker compose up`: server starts cleanly with no tracebacks in `docker compose logs app`, and `curl http://localhost:8501/` returns HTTP 200
+- [ ] Full interactive click-through (upload a real photo → edit table → Save → chart updates → 6-file rejection) — **still pending manual confirmation**; headless browser automation wasn't available in the dev sandbox (missing system libraries, would need a `sudo` install), so this needs an actual person clicking through the running app
 
 ## Phase 4: Dockerize and full run (1 hour)
 
