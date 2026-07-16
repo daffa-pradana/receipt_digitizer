@@ -15,8 +15,8 @@ Split rationale: Daffa owns everything that needs Docker/WSL/Python fluency to b
 | 2: Database layer | Daffa | ✅ Done |
 | 3: Streamlit UI | Daffa | ✅ Done |
 | Pre-demo accuracy hardening | Daffa | ✅ Done |
-| 4: Dockerize and full run | Daffa | ⬜ Not started |
-| 5: Demo prep | siapahayooo1709 | ⬜ Not started |
+| 4: Dockerize and full run | Daffa | ✅ Done |
+| 5: Demo prep | siapahayooo1709 | 🔄 In progress |
 | 6: Deployment (post-demo) | Daffa | ⬜ Not started |
 
 **Ongoing (not phase-bound):** siapahayooo1709 reviews/approves every PR; he can also update the `CATEGORIES` dict in `app/core/extract.py` directly via GitHub's web "Edit this file" button (opens a PR for him automatically, no git/terminal needed) whenever he thinks of an Indonesian merchant keyword that's missing.
@@ -94,20 +94,20 @@ Testing all 5 receipts in `tests/sample_receipts/` against `tests/supposed_resul
 
 4 of 5 fully correct or near-perfect; the one remaining gap is a documented, inherent OCR limitation the editable review table exists to catch — consistent with the PRD's 4-of-5 success bar.
 
-## Phase 4: Dockerize and full run (1 hour)
+## Phase 4: Dockerize and full run (1 hour) — ✅ Done
 
-- [ ] `docker compose up --build` succeeds (do this well ahead of the demo, the build is large)
-- [ ] App reaches Postgres using host `db` (not `localhost`)
-- [ ] OCR models are baked in — confirmed by disconnecting wifi and checking OCR still runs
+- [x] `docker compose up --build` succeeds (rebuilt several times tonight; cache preserved except for the layers that actually changed)
+- [x] App reaches Postgres using host `db` (not `localhost`) — confirmed via real saves persisting across reloads
+- [x] OCR models are baked in — confirmed with `docker run --network none` (stronger than a wifi-disconnect test, since it guarantees zero network access at the container level): OCR still ran and extracted the Indomaret receipt correctly with no internet
 
-**Acceptance:** a fresh `docker compose up` on a clean checkout brings up a working app.
+**Acceptance:** a fresh `docker compose up` on a clean checkout brings up a working app. ✅ verified above.
 
-## Phase 5: Demo prep (30 min)
+## Phase 5: Demo prep (30 min) — 🔄 In progress (siapahayooo1709)
 
-- [ ] 5 real, varied receipts placed in `tests/sample_receipts/`
-- [ ] Full dry run done, noted which receipts read cleanly
-- [ ] One-line honest-AI-framing answer ready (OCR is the ML part; extraction is rule based; the editable table handles OCR errors)
-- [ ] Fallback plan ready: app already running in a terminal before presenting, plus a screen recording of a successful run as insurance
+- [x] 5 real, varied receipts placed in `tests/sample_receipts/` — but 2 of them (cinema, flight) are **app/PDF screenshots**, not physical printed receipts; recommend swapping in physical Indonesian receipts for the actual demo since that's the thesis' own declared scope (see `tests/supposed_result.json` for the current ground truth and `.tmp/enhancement_options.md` for the full reasoning) — **not yet done**
+- [x] Full dry run done — see the Phase 3/hardening results table above; 4/5 correct or near-perfect
+- [ ] One-line honest-AI-framing answer ready — material exists throughout this doc and the PRD's section 8, but siapahayooo1709 should prepare it in his own words since he's defending it
+- [ ] Fallback plan ready: app already running in a terminal before presenting, plus a screen recording of a successful run as insurance — **not yet done**
 
 **Acceptance:** the full flow runs start to finish in under two minutes.
 
