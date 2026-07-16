@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Bake OCR models into the image so the demo needs no internet
 RUN python -c "import easyocr; easyocr.Reader(['en'], gpu=False)"
 
+# Late (not right after WORKDIR): keeps earlier layers cache-hit on rebuild
+ENV PYTHONPATH=/app
+
 COPY app/ ./app/
 
 EXPOSE 8501

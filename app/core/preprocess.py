@@ -5,13 +5,7 @@ TARGET_WIDTH = 900
 
 
 def clean(image_bytes: bytes) -> np.ndarray:
-    buffer = np.frombuffer(image_bytes, dtype=np.uint8)
-    image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
-    if image is None:
-        raise ValueError("Could not decode image bytes")
-
-    image = _resize(image, TARGET_WIDTH)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = grayscale(image_bytes)
     return cv2.adaptiveThreshold(
         gray,
         255,
@@ -20,6 +14,19 @@ def clean(image_bytes: bytes) -> np.ndarray:
         31,
         10,
     )
+
+
+def grayscale(image_bytes: bytes) -> np.ndarray:
+    image = _decode_and_resize(image_bytes)
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+
+def _decode_and_resize(image_bytes: bytes) -> np.ndarray:
+    buffer = np.frombuffer(image_bytes, dtype=np.uint8)
+    image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
+    if image is None:
+        raise ValueError("Could not decode image bytes")
+    return _resize(image, TARGET_WIDTH)
 
 
 def _resize(image: np.ndarray, target_width: int) -> np.ndarray:

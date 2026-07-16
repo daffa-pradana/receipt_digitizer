@@ -1,0 +1,32 @@
+[
+  {
+    "filename": "cinema_receipt.jpeg",
+    "merchant": "m-tix",
+    "category": "entertainment",
+    "amount": "236000"
+  },
+  {
+    "filename": "kopi_tuku_receipt.jpeg",
+    "merchant": "TOKO KOPI TUKU",
+    "category": "F&B",
+    "amount": "113000"
+  },
+  {
+    "filename": "flight_payment_receipt.jpeg",
+    "merchant": "Traveloka",
+    "category": "Transport",
+    "amount": "1760788"
+  },
+  {
+    "filename": "toll_road_receipt.jpeg",
+    "merchant": "PT Translingkar",
+    "category": "Transport",
+    "amount": "15000"
+  },
+  {
+    "filename": "indomaret_receipt.jpeg",
+    "merchant": "Indomaret",
+    "category": "Groceries",
+    "amount": "62100"
+  }
+]
