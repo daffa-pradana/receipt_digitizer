@@ -21,10 +21,26 @@ Turn up to 5 receipt photos into a categorised expense record with a live spendi
 git clone git@github.com:daffa-pradana/receipt_digitizer.git
 cd receipt_digitizer
 cp .env.example .env      # adjust the password if you like
-docker compose up --build
+make up
 ```
 
 Open http://localhost:8501
+
+`make` wraps the common Docker commands so you don't need to remember the raw `docker compose` invocations:
+
+```bash
+make help       # list all commands
+make up         # build (if needed) and start the app + database
+make down       # stop everything (keeps saved data)
+make logs       # follow the app's logs
+make reset-db   # wipe saved transactions, keep the schema
+make nuke       # stop everything and delete the database volume (fresh start)
+make shell      # open a shell inside the running app container
+make psql       # open a psql prompt against the database
+make test       # run the extraction unit tests (no Docker needed)
+```
+
+No `make`? The plain command is `docker compose up --build`.
 
 To also run pgAdmin for inspecting the database:
 
